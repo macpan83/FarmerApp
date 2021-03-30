@@ -26,7 +26,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 // $config['base_url'] = 'http://localhost/CPEFarmerWebApp/';      // Local
 // $config['base_url'] = 'http://my-demo.xyz/farmers/';            // Production
 //$config['base_url'] = 'http://888travelthailand.com/farmers/';            // Hostinger Production
-$config['base_url'] = 'http://localhost/FarmersAppBackend/';    
+$config['base_url'] = 'https://mercadosagricolaspr.com/farmer-new/';    
 /*
 |--------------------------------------------------------------------------
 | Index File

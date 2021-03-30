@@ -59,13 +59,13 @@ class Catagories_model extends CI_Model {
     }
     
     public function upd_catagory_by_id($params){
-        $data = $params['data'];
+        // $data = $params['data'];
 
-        $chk_user = $this->db->get_where($this->tb_name, ['cid'=>$params['id']]);
-
-        if(!empty($chk_user->result_array())){
-            $this->db->where('cid', $params['id']);
-            $res = $this->db->update($this->tb_name, $data);
+        $chk_cat = $this->db->get_where($this->tb_name, ['cid'=>$params['cid']]);
+        $res1 = $chk_cat->result_array();
+        if(!empty($res1)){
+            $this->db->where('cid', $params['cid']);
+            $res = $this->db->update($this->tb_name, $params);
 
             if($res){
                 return ['status'=>true, 'message'=>'Categoría actualizada con éxito.'];
@@ -85,10 +85,10 @@ class Catagories_model extends CI_Model {
     }
 
     public function del_catagory_by_id($params){
-        $chk_user = $this->db->get_where($this->tb_name, ['cid'=>$params['id']]);
+        $chk_user = $this->db->get_where($this->tb_name, ['cid'=>$params['cid']]);
 
         if(!empty($chk_user->result_array())){
-            $res = $this->db->delete($this->tb_name, array('cid' => $params['id']));
+            $res = $this->db->delete($this->tb_name, array('cid' => $params['cid']));
 
             if($res){
                 return ['status'=>true, 'message'=>'Categoría borrada con éxito.', 'data'=>$res];

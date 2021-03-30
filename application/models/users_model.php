@@ -11,7 +11,8 @@ class Users_model extends CI_Model {
 
     public function get_all_users(){
         $res = $this->db->get($this->tb_name);
-        if(!empty($res->result())){
+        $res1 = $res->result();
+        if(!empty($res1)){
             return ['status'=>true, 'message'=>'Usuario cargados con éxito.', 'data'=>$res->result_array()];
             // return ['status'=>true, 'message'=>'User loaded successfully', 'data'=>$res->result_array()];
         }
@@ -23,7 +24,7 @@ class Users_model extends CI_Model {
     }
     
     public function getallfarmers(){
-        $res = $this->db->get_where($this->tb_name, ['user_type'=>'2', 'status' => '1'])->result();
+        $res = $this->db->get_where($this->tb_name, ['user_type'=>'2'])->result();
         if(count($res)){
             return ['status'=>true, 'message'=>'Agricultores cargados con éxito.', 'total_rec'=>count($res), 'data'=>$res];
             // return ['status'=>true, 'message'=>'Farmers loaded sucessfully.', 'total_rec'=>count($res), 'data'=>$res];
@@ -35,24 +36,41 @@ class Users_model extends CI_Model {
 
     }
 
-    public function getInctiveFarmers(){
- $res = $this->db->get_where($this->tb_name, ['user_type'=>'2','status'=>'0'])->result();
+ //    public function getInctiveFarmers(){
+ // $res = $this->db->get_where($this->tb_name, ['user_type'=>'2','status'=>'0'])->result();
 
 
-        if(count($res)){
-            return ['status'=>true, 'message'=>'Agricultores cargados con éxito.', 'total_rec'=>count($res), 'data'=>$res];
+ //        if(count($res)){
+ //            return ['status'=>true, 'message'=>'Agricultores cargados con éxito.', 'total_rec'=>count($res), 'data'=>$res];
+ //            // return ['status'=>true, 'message'=>'Farmers loaded sucessfully.', 'total_rec'=>count($res), 'data'=>$res];
+ //        }
+ //        else{
+ //            return ['status'=>false, 'message'=>'Falla para cargar Agricultor' , 'total_rec'=>count($res), 'data'=>$res];
+ //            // return ['status'=>false, 'message'=>'Failed to load farmer.'];
+ //        }
+
+
+ //    }
+
+    public function activateFarmerById($uid){
+        $data = ['status' => '1'];
+        $this->db->where('uid' , $uid);
+            $res = $this->db->update($this->tb_name, $data);
+
+        if($res){
+            return ['status'=>true, 'message'=>'Farmer Activated with id = '.$uid,];
             // return ['status'=>true, 'message'=>'Farmers loaded sucessfully.', 'total_rec'=>count($res), 'data'=>$res];
         }
         else{
-            return ['status'=>false, 'message'=>'Falla para cargar Agricultor' , 'total_rec'=>count($res), 'data'=>$res];
+            return ['status'=>false, 'message'=>'Update command failed'];
             // return ['status'=>false, 'message'=>'Failed to load farmer.'];
         }
 
 
     }
 
-    public function activateFarmerById($uid){
-        $data = ['status' => '1'];
+       public function deactivateFarmerById($uid){
+        $data = ['status' => '0'];
         $this->db->where('uid' , $uid);
             $res = $this->db->update($this->tb_name, $data);
 
@@ -176,21 +194,14 @@ class Users_model extends CI_Model {
 
     }
 
-    public function check_admin_login($params){
-        $res = $this->db->get_where($this->tb_name, ['user_type' => $params['user_type'], 'email'=>$params['email'], 'password'=>sha1($params['password'])]);
-        if(!empty($res->result())){
-            return ['status'=>true, 'message'=>'Admin cargado con éxito', 'data'=>$res->result_array()];
-            // return ['status'=>true, 'message'=>'Admin loaded successfully', 'data'=>$res->result_array()];
-        }
-        else{
-            return ['status'=>false, 'message'=>'Falla para cargar detalles del Admin.'];
-            // return ['status'=>false, 'message'=>'Failed to load admin details.'];
-        }
-
-    }
-
-    public function check_farmer_login($params){
-        $res = $this->db->get_where($this->tb_name, ['user_type' => $params['user_type'], 'email'=>$params['email'], 'password'=>sha1($params['password']), 'status'=>'1']);
+  public function check_farmer_login($params){
+      $userType = $params['user_type'];
+      $email = $params['email'];
+      $password = sha1($params['password']);
+      
+  
+        $res = $this->db->get_where($this->tb_name, ['user_type' => $userType, 'email'=>$email, 'password'=>$password, 'status'=>1]);
+      
         if(!empty($res->result())){
             return ['status'=>true, 'message'=>'Agricultor cargado con éxito.', 'data'=>$res->result_array()];
             // return ['status'=>true, 'message'=>'Farmer loaded successfully.', 'data'=>$res->result_array()];
@@ -224,7 +235,8 @@ class Users_model extends CI_Model {
     
     public function add_farmer($params){
         $chk_user = $this->db->get_where($this->tb_name, ['email'=>$params['email']]);
-        if(empty($chk_user->result_array())){
+        $res1 = $chk_user->result_array();
+        if(empty($res1)){
             $res = $this->db->insert($this->tb_name, $params);
             if($res){
                 return ['status'=>true, 'message'=>'Usuario creado con éxito.'];
@@ -276,7 +288,7 @@ class Users_model extends CI_Model {
                 'password'=>sha1($params['new_pass'])
             ];
 
-        $chk_user = $this->db->get_where($this->tb_name, ['email'=>$params['email'], 'password'=>sha1($params['old_pass'])]);
+        $chk_user = $this->db->get_where($this->tb_name, ['email'=>$params['email']]);
 
         if(!empty($chk_user->result_array())){
             $this->db->where('email', $params['email']);
@@ -414,6 +426,22 @@ class Users_model extends CI_Model {
 
     }
     
+     public function upd_farmer_prefer_address($params){
+        $data = ['preferred_delivery_address' => $params['preferred_delivery_address']];
+        $this->db->where('uid', $params['uid']);
+        $res = $this->db->update($this->tb_name, $data);
+
+        if($res){
+            return ['status'=>true, 'message'=>'Dirección de entrega preferida actualizada.'];
+            // return ['status'=>true, 'message'=>'Farmers address updated successfully.'];
+        }
+        else{
+            return ['status'=>false, 'message'=>'No actualizar la dirección de entrega preferida de Farmer.'];
+            // return ['status'=>false, 'message'=>'Failed to update farmers address.'];
+        }
+
+    }
+    
     public function getfarmerbyid($uid){
         
         $res = $this->db->get_where($this->tb_name, ['uid'=>$uid])->result();
@@ -427,6 +455,30 @@ class Users_model extends CI_Model {
         else{
             return ['status'=>false, 'message'=>'Falla para cargar detalles Agricultores.', 'total_rec'=>count($res)];
             // return ['status'=>false, 'message'=>'Failed to load.'];
+        }
+
+    }
+
+    public function check_admin_login($params){
+        $res = $this->db->get_where($this->tb_name, ['email'=>$params['email'], 'password'=>sha1($params['password'])]);
+        
+    //     print_r($userType);
+    //   die();
+        if(!empty($res->result())){
+            $res1 = $res->result();
+        $userType = $res1[0]->user_type;
+            if(($userType != 2 ) && ($userType != 3)){
+               return ['status'=>true, 'message'=>'Agricultor cargado con éxito.', 'data'=>$res->result_array()]; 
+            }
+            else{
+              return ['status'=>false, 'message'=>'Usuario no autorizado para iniciar sesión.'];  
+            }
+            
+            // return ['status'=>true, 'message'=>'Farmer loaded successfully.', 'data'=>$res->result_array()];
+        }
+        else{
+            return ['status'=>false, 'message'=>'Combinación incorrecta de contraseña de nombre de usuario'];
+            // return ['status'=>false, 'message'=>'sorry, wrong username or password.'];
         }
 
     }

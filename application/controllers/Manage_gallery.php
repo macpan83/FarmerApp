@@ -90,7 +90,7 @@ class Manage_gallery extends CI_Controller {
                             $_FILES['file']['size']     = $_FILES['images']['size'][$i]; 
                              
                             // File upload configuration 
-                           $config['upload_path']          = './uploads/product-images/';
+                           $config['upload_path']          = './uploads/products/';
                            $config['allowed_types']        = 'gif|jpg|jpeg|png';
 
 
@@ -109,10 +109,11 @@ class Manage_gallery extends CI_Controller {
                                 $uploadData[$i]['gallery_id'] = $galleryID; 
                                 $uploadData[$i]['file_name'] = $fileData['file_name']; 
                                 $uploadData[$i]['uploaded_on'] = date("Y-m-d H:i:s"); 
-                            }else{ 
-                                $errorUpload .= $fileImages[$key].'('.$this->upload->display_errors('', '').') | ';  
-                                print_r($this->upload->display_errors('', ''));
-                            } 
+                            }
+                            // else{ 
+                            //     $errorUpload .= '('.$this->upload->display_errors('', '').') | ';  
+                            //     print_r($this->upload->display_errors('', ''));
+                            // } 
                             
                         } 
                          
@@ -120,6 +121,14 @@ class Manage_gallery extends CI_Controller {
                         $errorUpload = !empty($errorUpload)?' Upload Error: '.trim($errorUpload, ' | '):''; 
                          
                         if(!empty($uploadData)){ 
+
+                            foreach($uploadData as &$value){
+                                
+                                    $value['file_name'] = base_url('uploads/products/').$value['file_name'];
+                                  
+                               
+                            }
+
                             // Insert files info into the database 
                             $insert = $this->gallery->insertImage($uploadData); 
                         } 
@@ -182,7 +191,7 @@ class Manage_gallery extends CI_Controller {
                             // $config['allowed_types'] = 'jpg|jpeg|png|gif'; 
                              
                             // Load and initialize upload library 
-                             $config['upload_path']          = './uploads/product-images/';
+                             $config['upload_path']          = './uploads/products/';
                            $config['allowed_types']        = 'gif|jpg|jpeg|png';
 
 
@@ -201,15 +210,20 @@ class Manage_gallery extends CI_Controller {
                                 $uploadData[$i]['gallery_id'] = $id; 
                                 $uploadData[$i]['file_name'] = $fileData['file_name']; 
                                 $uploadData[$i]['uploaded_on'] = date("Y-m-d H:i:s"); 
-                            }else{ 
-                                $errorUpload .= $fileImages[$key].'('.$this->upload->display_errors('', '').') | ';  
-                            } 
+                            }
+                            // else{ 
+                            //     $errorUpload .= $fileImages[$key].'('.$this->upload->display_errors('', '').') | ';  
+                            // } 
                         } 
                          
                         // File upload error message 
-                        //$errorUpload = !empty($errorUpload)?'Upload Error: '.trim($errorUpload, ' | '):''; 
+                        $errorUpload = !empty($errorUpload)?'Upload Error: '.trim($errorUpload, ' | '):''; 
                          
                         if(!empty($uploadData)){ 
+                             foreach($uploadData as &$value){                                
+                                    $value['file_name'] = base_url('uploads/products/').$value['file_name'];  
+                                }
+
                             // Insert files data into the database 
                             $insert = $this->gallery->insertImage($uploadData); 
                         } 

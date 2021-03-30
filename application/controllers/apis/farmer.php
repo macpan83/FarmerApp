@@ -59,7 +59,6 @@ class farmer extends CI_Controller {
 
         // This is to get the inputs from json in insomnia.
 		$inputs = json_decode($this->input->raw_input_stream, true);
-
         $params = [
 			'cname' => $inputs['cname'],
 			'name' => $inputs['frname'],
@@ -67,15 +66,17 @@ class farmer extends CI_Controller {
 			'user_type' => $inputs['user_type'],
 			'email' 	=> $inputs['email'],
 			'password' 	=> sha1($inputs['password']),
-			'address' => $inputs['address']
+			'address' => $inputs['address'],
+ 			'preferred_delivery_address' => $inputs['preferred_delivery_address']
 		];
 
         $token = generateRandomString(6);
         $_mail['to'] = $params['email'];
         $_mail['subject'] = "Token de Fresh on the Go";         //"Token from Fresh on the Go";
-        $_mail['message'] = 'Tu token generado es '.$token;     //'Your generated token is '.$token;
+        $_mail['message'] = 'Tu token generado es <b>'.$token.'</b>';     //'Your generated token is '.$token;
 
         $chk_user = $this->user->get_customer_by_email(['email'=>$params['email']]);
+        
         if(!$chk_user['status']){
             
             $a_u_c = $this->user->add_farmer($params);
@@ -395,7 +396,7 @@ class farmer extends CI_Controller {
 		$res = $this->user->get_customer_by_email($params);
 		if($res['status']){
 		    
-		    $pass_site_name = 'http://888travelthailand.com/farmers/forgot_change_pass';
+		    $pass_site_name = 'https://www.mercadosagricolaspr.com/farmer-new/forgot_change_pass';
 	        $token = generateRandomString(4);
             $_mail['to'] = $params['email'];
             $_mail['subject'] = "Se te olvidó tu contraseña";   //"Forgot password";
@@ -424,6 +425,21 @@ class farmer extends CI_Controller {
 		    echo json_encode($res);
 		}
 		
+	}
+	
+		public function update_farmer_prefered_address(){
+		 $inputs = json_decode($this->input->raw_input_stream, true);	    
+	    $params = [
+	        'uid' => $inputs['fid'],
+	        'preferred_delivery_address' => $inputs['preferred_delivery_address']	        
+        ];
+		$res = $this->user->upd_farmer_prefer_address($params);
+    		if($res['status']){
+                echo json_encode($res);
+    		}
+    		else{
+    		    echo json_encode($res);
+    		}
 	}
 
 }

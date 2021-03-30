@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
 
   <!-- Material Kit CSS -->
-  <link href="<?=base_url('assets/css/material-dashboard.css?v=2.1.2')?>" rel="stylesheet" />
+  <link href="<?= base_url('assets/css/material-dashboard.css?v=2.1.2') ?>" rel="stylesheet" />
 
   <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
@@ -21,20 +21,20 @@
   <link href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css'>
   <script src='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js'></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
-<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
 </head>
 
 <body>
   <div class="wrapper ">
-    
+
     <!-- Sidebar started -->
-    <?php require_once('common/nav.php')?>
+    <?php require_once('common/nav.php') ?>
     <!-- Sidebar ended -->
 
     <div class="main-panel">
       <!-- Navbar -->
-      <?php require_once('common/navbar.php');?>
+      <?php require_once('common/navbar.php'); ?>
       <!-- End Navbar -->
       <div class="content">
         <!-- Button trigger modal -->
@@ -42,22 +42,22 @@
           Add stocks
         </button> -->
 
-<!--         <?php 
-      $data['status'] = '0';
- $mm = json_encode($data['status']);
+        <!--         <?php
+                      $data['status'] = '0';
+                      $mm = json_encode($data['status']);
 
- echo "mm value = ".$mm;
-$md= json_decode($mm, true);
-echo "md value = ".$md;
-?> -->
+                      echo "mm value = " . $mm;
+                      $md = json_decode($mm, true);
+                      echo "md value = " . $md;
+                      ?> -->
 
 
         <div class="container-fluid">
-       
-     <!--      <script type="text/javascript">
-<?php if($md ==1 ){ ?>
+
+          <!--      <script type="text/javascript">
+<?php if ($md == 1) { ?>
    toastr.success("Farmer activated");    
-<?php }else if($md == false){  ?>
+<?php } else if ($md == false) {  ?>
     toastr.error("Farmer cannot be activated");
 <?php } ?>
 
@@ -66,81 +66,81 @@ echo "md value = ".$md;
 
           <table id="example" class="display" style="width:100%">
             <thead>
-                <tr>
-                    <th>SlNo</th>
-                    <th>Picture</th>
-                    <th>Name</th>
-                    <th>Age</th>
-                    <th>Gender</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Address</th>
-                    <th>Company</th>
-                    <th>Activate</th>
-                </tr>
+              <tr>
+                <th>SlNo</th>
+                <th>Fotografía</th>
+                <th>Name</th>
+                <th>Edad</th>
+                <th>Género</th>
+                <th>Correo electrónico</th>
+                <th>Teléfono</th>
+                <th>Dirección</th>
+                <th>Compañía</th>
+                <th>Activate</th>
+              </tr>
             </thead>
             <tbody>
-                <?php
-        $totalRecordcount = $data['total_rec']  ;
-        
-          if($totalRecordcount != 0){
-              $rr = json_encode($data['data']);                 
-              $d = json_decode($rr, true); 
-            
-              }  
-                ?>
-              <?php 
-if(!empty($d)) {
-              foreach($d as $key => $value) { 
-              $url = 'activatefarmer/'.$value["uid"];
-                ?>
-                <tr>
-                    <td><?=$key+1?></td>
-                    <td><?=$value['profile_img']?></td>
-                    <td><?=$value['name']?></td>
-                    <td><?=$value['age']?></td>
-                    <td><?=$value['gender']?></td>
-                    <td><?=$value['email']?></td>
-                    <td><?=$value['phone']?></td>
-                    <td><?=$value['address'].', '.$value['town'].'<br/>'.$value['town']?></td>
-                    <td><?=$value['cname']?></td>
-                    <td><a href="<?=site_url().$url?>" class="btn btn-sm btn-info ">
-                      Activate
-                      </a></td>
-                </tr>
+              <?php
+              $totalRecordcount = $data['total_rec'];
 
-              <?php } }?>
+              if ($totalRecordcount != 0) {
+                $rr = json_encode($data['data']);
+                $d = json_decode($rr, true);
+              }
+              ?>
+              <?php
+              if (!empty($d)) {
+                foreach ($d as $key => $value) {
+                  $url = 'activatefarmer/' . $value["uid"];
+              ?>
+                  <tr>
+                    <td><?= $key + 1 ?></td>
+                    <td><?= $value['profile_img'] ?></td>
+                    <td><?= $value['name'] ?></td>
+                    <td><?= $value['age'] ?></td>
+                    <td><?= $value['gender'] ?></td>
+                    <td><?= $value['email'] ?></td>
+                    <td><?= $value['phone'] ?></td>
+                    <td><?= $value['address'] . ', ' . $value['town'] . '<br/>' . $value['town'] ?></td>
+                    <td><?= $value['cname'] ?></td>
+                    <td><a href="<?= site_url() . $url ?>" class="btn btn-sm btn-info ">
+                        Activate
+                      </a></td>
+                  </tr>
+
+              <?php }
+              } ?>
 
             </tbody>
             <tfoot>
-                <tr>
-                    <th>SlNo</th>
-                    <th>Picture</th>
-                    <th>Name</th>
-                    <th>Age</th>
-                    <th>Gender</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Address</th>
-                    <th>Company</th>
-                </tr>
+              <tr>
+                <th>SlNo</th>
+                <th>Picture</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Company</th>
+              </tr>
             </tfoot>
           </table>
         </div>
       </div>
-      
+
       <?php require_once('common/footer.php') ?>
-    
+
     </div>
   </div>
 </body>
-  
-  <script type="text/javascript">
-    $(document).ready(function() {
-        $('#example').DataTable( {
-            "pagingType": "full_numbers"
-        } );
-    } );
-  </script>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    $('#example').DataTable({
+      "pagingType": "full_numbers"
+    });
+  });
+</script>
 
 </html>

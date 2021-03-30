@@ -7,13 +7,14 @@ class Welcome extends CI_Controller {
 		parent::__construct();
 		date_default_timezone_set('Asia/Kolkata');
 
-		$this->load->model('users_model', 'user');
+      	$this->load->model('users_model', 'user');
 		$this->load->model('catagories_model', 'cat');
 		$this->load->model('products_model', 'pro');
 		$this->load->model('stocks_model', 'sto');
 		$this->load->model('Order_model', 'ord');
+		$this->load->model('store_model', 'store');
+		$this->load->model('chart_model','chart');
 		$this->load->helper('form');
-
 		$this->load->library('session');
 		
 		// $this->load->model('user', '');
@@ -46,7 +47,12 @@ class Welcome extends CI_Controller {
 
 	public function dashboard(){
 		if($this->session->userdata('id')) {
-			$this->load->view('dashboard');
+			$r = $this->chart->get_popular_product();
+			$k = $this->chart->get_income_detail();
+			$o = $this->chart->order_detail();
+
+			$this->load->view('dashboard',[ 'data' => $r , 'rec' => $k , 'statics'=>$o]);
+
 		}
 		else{
 			redirect('login','refresh');
@@ -56,7 +62,8 @@ class Welcome extends CI_Controller {
 	public function catagories(){
 		if($this->session->userdata('id')) {
 			$r = $this->cat->get_all_catagories();
-			$this->load->view('catagories', ['data'=>$r]);
+			$msg = "A continuación se muestra la lista de categorías de productos";
+			$this->load->view('catagories', ['data'=>$r, 'status'=>true,'message'=>$msg]);
 		}
 		else{
 			redirect('login','refresh');
@@ -67,7 +74,8 @@ class Welcome extends CI_Controller {
 	public function products(){
 		if($this->session->userdata('id')) {
 			$r = $this->pro->get_all_products_for_admin();
-			$this->load->view('products', ['data'=>$r]);
+			$msg = "A continuación se muestra la lista de productos";
+			$this->load->view('products', ['data'=>$r,'status'=>true,'message'=>$msg]);
 		}
 		else{
 			redirect('login','refresh');
@@ -89,11 +97,9 @@ class Welcome extends CI_Controller {
 	public function orders(){
 		if($this->session->userdata('id')) {
 			 $r = $this->ord->all_order_detail();
-			//print_r($r);
-		//	die();
-
-			 $this->load->view('orders', ['data'=>$r]);
-			//$this->load->view('orders');
+			 $msg = "Lista de orden";
+			 $this->load->view('orders', ['data'=>$r ,'status'=>true,'message'=>$msg]);
+			
 		}
 		else{
 			redirect('login','refresh');
@@ -123,23 +129,42 @@ class Welcome extends CI_Controller {
 
 	}
 
-	public function newfarmers(){
+	public function store_address(){
 		if($this->session->userdata('id')) {
-			$r = $this->user->getInctiveFarmers();
-			$this->load->view('inactivefarmer', ['data'=>$r, 'status' => 0]);
+			$r = $this->store->getalladdress();
+			$this->load->view('stores', ['data'=>$r]);
 		}
 		else{
 			redirect('login','refresh');
 		}
-
 	}
+
+
 	public function activatefarmer(){
 		if($this->session->userdata('id')) {
 			$data_id = $this->uri->segment(2);
 			$r = $this->user->activateFarmerById($data_id);
 				if($r['status']){
-					$f = $this->user->getInctiveFarmers();
-					$this->load->view('inactivefarmer', ['data'=>$f, 'msg' => $r['status']]);	
+					$r = $this->user->getallfarmers();
+					$this->load->view('farmers', ['data'=>$r]);
+				}
+				else{
+					echo "record not updated";
+					die();
+				}	
+			}
+		else{
+			redirect('login','refresh');
+		}
+
+	}
+	public function deactivatefarmer(){
+		if($this->session->userdata('id')) {
+			$data_id = $this->uri->segment(2);
+			$r = $this->user->deactivateFarmerById($data_id);
+				if($r['status']){
+					$r = $this->user->getallfarmers();
+					$this->load->view('farmers', ['data'=>$r]);	
 				}
 				else{
 					echo "record not updated";

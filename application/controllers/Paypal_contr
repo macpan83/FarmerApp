@@ -1,0 +1,55 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Paypal_contr extends CI_Controller {
+
+    public function __construct(){
+        parent::__construct();
+        date_default_timezone_set('Asia/Kolkata');
+        $this->load->model('products_model', 'pro');
+        $this->load->model('catagories_model', 'cat');
+        $this->load->model('order_model', 'ord');
+        $this->load->model('email_model', 'mai');       
+        $this->load->helper('form');
+        $this->load->library('session');
+
+        $this->load->library('paypal_lib');
+        $this->load->model('product');
+        $this->load->database();
+         $this->load->helper("url");
+    }
+
+    function index(){
+        $data = array();
+        //get products inforamtion from database table
+        $data['products'] = $this->product->getProducts();
+        //loav view and pass the products information to view
+        $this->load->view('products/index', $data);
+    }
+
+    function buyProduct($id){
+print_r($id);
+die();
+
+        //Set variables for paypal form
+        $returnURL = base_url().'paypal/success'; //payment success url
+        $failURL = base_url().'paypal/fail'; //payment fail url
+        $notifyURL = base_url().'paypal/ipn'; //ipn url
+        //get particular product data
+        $product = $this->product->getProducts($id);
+        $userID = 1; //current user id
+        $logo = base_url().'Your_logo_url';
+         
+        $this->paypal_lib->add_field('return', $returnURL);
+        $this->paypal_lib->add_field('fail_return', $failURL);
+        $this->paypal_lib->add_field('notify_url', $notifyURL);
+        $this->paypal_lib->add_field('item_name', $product['name']);
+        $this->paypal_lib->add_field('custom', $userID);
+        $this->paypal_lib->add_field('item_number',  $product['id']);
+        $this->paypal_lib->add_field('amount',  $product['price']);        
+        $this->paypal_lib->image($logo);
+         
+        $this->paypal_lib->paypal_auto_form();
+    }
+
+}

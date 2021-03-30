@@ -41,15 +41,30 @@ class Users extends CI_Controller {
 	}
 	
 	public function change_password(){
-	    $r = $this->user->change_password_admin($this->input->post());
-	    if($r['status']){
-	        $this->session->set_flashdata('message', '<span class="text-success" style="font-size: 20px;">'.$r["message"].'</span>');
-	        redirect('change_pass', 'refresh');
-	    }
-	    else{
-	        $this->session->set_flashdata('message', '<span class="text-danger" style="font-size: 20px;">'.$r["message"].'</span>');
-	        redirect('change_pass', 'refresh');
-	    }
+	$this->load->helper(array('form', 'url'));
+    $this->load->library('form_validation');
+
+	$this->form_validation->set_rules('email', 'email', 'trim|required|valid_email');
+	$this->form_validation->set_rules('new_pass', 'Password', 'trim|required|min_length[5]');
+	$this->form_validation->set_rules('con_new_pass', 'Confrim password', 'trim|required|min_length[5]|matches[new_pass]');
+
+		if ($this->form_validation->run() == FALSE)
+            {
+                $this->load->view('change_pass');
+            }
+            else
+            {
+
+			    $r = $this->user->change_password_admin($this->input->post());
+			    if($r['status']){
+			        $this->session->set_flashdata('message', '<span class="text-success" style="font-size: 20px;">'.$r["message"].'</span>');
+			        redirect('change_pass', 'refresh');
+			    }
+			    else{
+			        $this->session->set_flashdata('message', '<span class="text-danger" style="font-size: 20px;">'.$r["message"].'</span>');
+			        redirect('change_pass', 'refresh');
+	    		}
+		}
 	}
 
 

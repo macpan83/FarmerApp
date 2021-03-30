@@ -2,9 +2,7 @@
 <html lang="en">
 
 <head>
-  <title>Admin | Course</title>
-  <link rel="icon" href="<?=base_url()?>uploads/favicon.png" type="image/gif">
-  
+  <title>Admin | Change Password</title>
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
@@ -45,9 +43,9 @@
           <!-- your content here -->
           <div class="row">
             <div class="col-md-12">
-              <b class="breadcrumb" style=" font-size:30px">Cambiar la contraseña</b>
+              <b class="text-left" style="font-size: 30px">Cambiar la contraseña</b>
             </div>
-            <div class="col-md-6 bg-dark border offset-md-3">
+            <div class="col-md-6 offset-md-3">
               <br />
               <br />
               <?php
@@ -64,27 +62,27 @@
 
               <input type="hidden" name="email" value="<?= $this->session->userdata('email') ?>" />
 
-              <div class="form-group ">
-                <label class="lead text-white">Correo electrónico de la cuenta</label>
-                <input type="email" name="email" class="form-control" value="" placeholder="Correo electrónico de la cuenta" />
+              <div class="form-group">
+                <label class="lead text-dark">Correo electrónico de la cuenta</label>
+                <input type="email" name="email" class="form-control" value="" placeholder="Email of the account" />
               </div>
               <div class="form-group">
-                <label class="lead text-white">Nueva contraseña</label>
-                <input type="text" name="new_pass" class="form-control" value="" placeholder="Nueva contraseña" />
+                <label class="lead text-dark">Nueva contraseña</label>
+                <input type="text" name="new_pass" class="form-control" value="" placeholder="New password" />
               </div>
               <div class="form-group">
-                <label class="lead text-white">Confirmar nueva contraseña</label>
-                <input type="text" name="con_new_pass" class="form-control" value="" placeholder="Confirmar nueva contraseña" />
+                <label class="lead text-dark">Confirmar nueva contraseñad</label>
+                <input type="text" name="con_new_pass" class="form-control" value="" placeholder="Confirm New password" />
               </div>
               <div class="form-group" align="right">
-                <input type="submit" name="sbmt" class="btn submitbtn" value="Cambiar la contraseña" />
-                <input type="reset" class="btn cancel" value="Clara" />
+                <input type="submit" name="sbmt" class="btn btn-outline-success" value="Cambiar la contraseña" />
+                <input type="reset" class="btn btn-outline-danger" value="Clear" />
               </div>
               </form>
               <div class="col-md-12 alert-mute p-2">
                 <?= $this->session->flashdata('message') ?>
               </div>
-
+              <br /><br />
             </div>
           </div>
         </div>

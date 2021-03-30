@@ -30,6 +30,7 @@ class Farmers extends CI_Controller {
 			'password'=>$this->input->post('upass')
 		];
 
+		
 		$r = $this->user->check_farmer_login($params);
 		// echo json_encode( $this->user->check_farmer_login($params) );
 

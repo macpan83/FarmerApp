@@ -30,7 +30,7 @@ class Product_gallery extends CI_Controller {
         // Check whether id is not empty       
             $data['gallery'] = $this->gallery->getRows($gallery_id); 
             $data['title'] = $data['gallery']['title']; 
-            print_r($data['gallery']['images']);
+         //   print_r($data['gallery']['images']);
              exit(json_encode($data));       
                  
     } 

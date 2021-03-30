@@ -388,7 +388,7 @@ class customer extends CI_Controller {
 		$res = $this->user->get_customer_by_email($params);
 		if($res['status']){
 		    
-		    $pass_site_name = 'http://888travelthailand.com/farmers/forgot_change_pass';
+		    $pass_site_name = 'https://www.mercadosagricolaspr.com/farmer-new/forgot_change_pass';
 	        $token = generateRandomString(4);
             $_mail['to'] = $params['email'];
             $_mail['subject'] = 'Se te olvidó tu contraseña';     //"Forgot password";

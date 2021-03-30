@@ -72,7 +72,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 */
 
 
-$op='1';
+$op='2';
 switch ($op)
 {
 	case '1': //Dev server
@@ -83,10 +83,10 @@ switch ($op)
 		break;
 		
 	case '2': // Production server
-		$server="localhost";
-		$username="mydemo_farmer";	
-		$password="Farmer@123"; //tR(G)VJn}lId";	
-		$db_name="mydemo_aditi"; // Database name
+			$server="localhost";
+		$username="mercados_root";	
+		$password="3hP)NwfCtThv";
+		$db_name="mercados_farmer_testing";
 		break;
 		
 	case '3': // Production server  HOSTINGER

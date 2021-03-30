@@ -68,9 +68,12 @@ $route['users'] = 'welcome/users';
 $route['farmers'] = 'welcome/farmers';
 $route['newfarmers'] = 'welcome/newfarmers';
 $route['activatefarmer/(:any)'] = 'welcome/activatefarmer/';
+$route['deactivatefarmer/(:any)'] = 'welcome/deactivatefarmer/';
 $route['change_pass'] = 'welcome/change_pass';
 $route['logout'] = 'welcome/logout';
 $route['gallery'] = 'manage_gallery';
+$route['store_add'] = 'welcome/store_address';
+$route['add_cordinator'] = 'admin_management/add_cordinator';
 
 
 

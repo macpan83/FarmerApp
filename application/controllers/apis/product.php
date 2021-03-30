@@ -41,6 +41,8 @@ class product extends CI_Controller {
 		$params = [
 			'name' => $this->input->get('pname')
 		];
+
+
 		$res = $this->pro->get_product_by_names($params);
         exit(json_encode($res));
     }
@@ -190,6 +192,32 @@ class product extends CI_Controller {
         }
         
         
+    }
+
+    public function get_product_by_cat(){
+         $cat_id = $this->input->get('cat_id');   
+       
+        $r = $this->pro->get_unique_product_by_category($cat_id);
+
+         if($r['status']){
+                echo json_encode($r);
+            }
+            else{
+                echo json_encode($r);
+            }
+    }
+
+    public function get_all_product_by_name(){
+         $product_name = $this->input->get('pname');   
+       
+        $r = $this->pro->get_all_product_by_name($product_name);
+
+         if($r['status']){
+                echo json_encode($r);
+            }
+            else{
+                echo json_encode($r);
+            }
     }
 
 }

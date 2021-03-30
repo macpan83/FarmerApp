@@ -20,16 +20,34 @@ class Order_info extends CI_Controller {
 	public function getOrderDetail(){
 		$order_id =	$this->uri->segment('3');
 		
-			 $r = $this->ord->get_order_detail($order_id);
-			
-// echo "<pre>";
-// print_r($r);
-// die();
-//$data = ['data'=>$r['data'], 'order_id' =>$r['order_id'], 'customerName'=>$r['order_from'] ];
+			 $r = $this->ord->get_order_detail($order_id);		
 
-$this->load->view('orderdetail', $r);
+			$this->load->view('orderdetail', $r);
 		//	$this->load->view('orderdetail', $r);
 			
+	}
+
+
+	public function updateOrderDetail(){
+
+		$params = [
+			'ord_no'=>$this->input->post('order_no'),
+			'updateAt'=>$this->input->post('updated_at'),  
+			'orderStatus'=>$this->input->post('or_status'),  
+			'orderRemark'=>$this->input->post('order_remark')
+		];
+
+		$r = $this->ord->upd_order_by_id($params);
+		if($r['status']){
+		$msg = 'pedido actualizado con éxito';
+		$re = $this->ord->all_order_detail();
+		$this->load->view('orders', ['data'=>$re,'status'=>true,'message'=>$msg]);
+		}else{
+		$msg = 'Lo sentimos, orden no actualizada';	
+		$re = $this->ord->all_order_detail();
+		$this->load->view('orders', ['data'=>$re,'status'=>false,'message'=>$msg]);
+		}
+		
 	}
 
 }

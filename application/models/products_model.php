@@ -14,6 +14,7 @@ class Products_model extends CI_Model {
         $this->db->select('pid');
         $this->db->select('cid');
         $this->db->select('(SELECT name FROM tbl_categories WHERE tbl_categories.cid = tbl_products.cid) as category');
+        $this->db->select('(SELECT email FROM tbl_users WHERE tbl_users.uid = tbl_products.created_by) as email');
         $this->db->select('type');
         $this->db->select('image');
         $this->db->select(['name', 'description', 'cost_price', 'sell_price', 'unit', 'total_qty', 'approve', 'created_at', 'updated_at', 'created_by']);
@@ -86,9 +87,11 @@ class Products_model extends CI_Model {
     }
 
     public function get_product_by_names($params){
+
+
         $this->db->select('*');
         $this->db->from($this->tb_name);
-        $this->db->where('name LIKE "'.$params['name'].'%"');
+        $this->db->where('name = "'.$params['name'].'"');
         $this->db->where('approve', '1');
         $this->db->order_by('pid', 'DESC');
         $res = $this->db->get();
@@ -172,7 +175,9 @@ class Products_model extends CI_Model {
     }
 
     public function get_product_by_catagory_6prod($params){
-        
+        $this->load->model('users_model'); // Load Model
+         // Access Method
+
         $this->db->select('cid');
         $this->db->select('(SELECT name from tbl_categories WHERE tbl_categories.cid = tbl_products.cid) as cname');
         $this->db->select('(SELECT c_img from tbl_categories WHERE tbl_categories.cid = tbl_products.cid) as c_img');
@@ -183,14 +188,28 @@ class Products_model extends CI_Model {
         if(!empty($res->result())){
             
             foreach($res->result() as $key => $val){
+
                 $data[$key]['cid'] = $val->cid;
                 $data[$key]['category'] = $val->cname;
                 $data[$key]['c_img'] = $val->c_img;
                 
                 $this->db->limit($params['limit']);
                 $res1 = $this->db->order_by('pid', 'DESC')->get_where($this->tb_name, ['cid'=>$val->cid]);
+               $result = $res1->result() ;
+             
+                foreach($result as $r1){             
+                    $farmer_id=$r1->created_by;
+                  
+                    $fid = ['id' => $farmer_id ];
+                    $farmer_data = $this->users_model->get_users_by_id($fid);
+                  
+                    $farmerName = $farmer_data['data'][0]['name'];
+                    $r1->farmerName = $farmerName ;
+                }
 
                 $data[$key]['cdata'] = $res1->result();
+
+              
             }
             
             return [
@@ -208,10 +227,11 @@ class Products_model extends CI_Model {
 
     }
 
-    public function add_product($params){
-        $chk_user = $this->db->get_where($this->tb_name, ['name'=>$params['name']]);
 
-        if(empty($chk_user->result_array())){
+    public function add_product($params){
+        // $chk_user = $this->db->get_where($this->tb_name, ['name'=>$params['name']]);
+
+        // if(empty($chk_user->result_array())){
             $res = $this->db->insert($this->tb_name, $params);
             if($res){
                 return ['status'=>true, 
@@ -227,34 +247,31 @@ class Products_model extends CI_Model {
                 return ['status'=>false, 'message'=>'Falla para agregar producto.'];
                 // return ['status'=>false, 'message'=>'Failed to add the product.'];
             }
-        }
-        else{
-            return ['status'=>false, 'message'=>'Producto ya existente.'];
-            // return ['status'=>false, 'message'=>'Product already existed.'];
-        }
+        // }
+        // else{
+        //     return ['status'=>false, 'message'=>'Producto ya existente.'];
+        //     // return ['status'=>false, 'message'=>'Product already existed.'];
+        // }
 
     }
     
     public function upd_product_by_id($params){
-
         // echo '<pre>'; print_r($params);
-
         $data = $params['data'];
-
-
-
+    
+       if($data['approve'] == 'none'){
+           unset($data['approve']);
+       }
        
         $chk_user = $this->db->get_where($this->tb_name, ['pid'=>$params['id']]);
-
-        if(!empty($chk_user->result_array())){
+        $re = $chk_user->result_array();
+        if(!empty($re)){
             $this->db->where('pid', $params['id']);
             $res = $this->db->update($this->tb_name, $data);
 
             if($res){
-               
                 return ['status'=>true, 'message'=>'Producto actualizado con éxito.'];
                 // return ['status'=>true, 'message'=>'Product updated successfully.'];
-
             }
             else {
                 return ['status'=>false, 'message'=>'Producto no actualizado.'];
@@ -300,8 +317,8 @@ class Products_model extends CI_Model {
 
     public function upd_prod_img_by_pid($params){
         $chk_user = $this->db->get_where($this->tb_name, ['pid'=>$params['pid']]);
-
-        if(!empty($chk_user->result_array())){
+$re = $chk_user->result_array();
+        if(!empty($re)){
             $this->db->where('pid', $params['pid']);
             $res = $this->db->update($this->tb_name, ['image'=>$params['file_name']]);
 
@@ -322,6 +339,7 @@ class Products_model extends CI_Model {
     }
 
     public function del_product_by_id($params){
+  
         $chk_user = $this->db->get_where($this->tb_name, ['pid'=>$params['id']]);
 
         if(!empty($chk_user->result_array())){
@@ -414,5 +432,51 @@ class Products_model extends CI_Model {
         }
     }
     
+
+
+    public function get_unique_product_by_category($params){       
+      
+         $this->db->group_by('name');
+         $res =  $this->db->get_where($this->tb_name, ['cid'=>$params, 'approve'=>'1'])->result();       
+
+       if($res){
+        return ['status'=>true, 'message'=>'lista de productos de la categoría seleccionada.', 'total_rec'=>count($res), 'data'=>$res];
+       }
+       else{
+         return ['status'=>false, 'message'=>'ningún producto encontrado en la categoría seleccionada'];
+       }
+    }
+
+    public function get_all_product_by_name($params){
+        $this->load->model('users_model');
+        $res = $this->db->get_where($this->tb_name, ['name'=>$params, 'approve'=>'1'])->result();
+        
+        if(!empty($res)){
+            
+            foreach($res as $key => $val){
+                $farmer_id = $val->created_by;
+                $fid = ['id' => $farmer_id ];
+                $farmer_data = $this->users_model->get_users_by_id($fid);
+                
+                $farmerName = $farmer_data['data'][0]['name'];
+                $val->farmerName = $farmerName ;
+            }
+
+          return [
+                'status'=>true, 
+                'message'=>'Seleccionar producto de cualquiera de los agricultores.', 
+                // 'message'=>'Products loaded successfully', 
+                'total_rec'=>count($res), 
+                'data'=>$res //$res->result_array()
+            ];
+
+        }
+        else{
+            return [
+                'status'=>true, 
+                'message'=>'ningún producto encontrado', 
+                ];
+        }
+    }
 }
 

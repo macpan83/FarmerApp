@@ -1,0 +1,39 @@
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed'); 
+ 
+class Product_gallery extends CI_Controller { 
+     
+    function __construct() { 
+        parent::__construct();          
+        // Load form helper and form validation library 
+        $this->load->helper('form'); 
+        $this->load->library('form_validation');          
+        // Load gallery model 
+        $this->load->model('gallery');          
+        // Default controller name 
+        $this->controller = 'manage_gallery'; 
+    } 
+     
+    public function allgallery(){ 
+        $data = array();         
+        
+         $data = $this->gallery->getRows();       
+         exit(json_encode($data));
+    
+    } 
+     
+    public function view(){   
+    $gallery_id = $this->uri->segment(4);  
+   // echo "gallery id = ".$gallery_id;
+ 
+
+        $data = array();    
+        // Check whether id is not empty       
+            $data= $this->gallery->getRows($gallery_id); 
+           // $data['title'] = $data['gallery']['title']; 
+           // print_r($data['gallery']['images']);
+             exit(json_encode($data));       
+                 
+    } 
+     
+    
+}

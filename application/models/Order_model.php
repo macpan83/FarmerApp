@@ -127,9 +127,7 @@ class Order_model extends CI_Model {
                 
         
                 if(count($cart_chk) != 0){
-                    
                     $ck = $cart_chk;
-    
                     $data['pid'] = $params['pid'];
                     $data['qty'] = $ck[0]->qty + $params['qty'];
                     $data['price'] = $ck[0]->price + ($sp * $params['qty']);
@@ -355,232 +353,107 @@ class Order_model extends CI_Model {
 
     }
     
-    public function addorder($params){
-        
-        // This condition will check the status with the created_by
-        
-        // $chk_ord = $this->db->get_where('tbl_order', ['created_by'=>$params['created_by', 'status'=>'1']])->result();
-        // if(!count($chk_ord)){
-        if(1){
-            // This condition of code will add the record to tbl_order
+   public function addorder($params){
+        // This condition of code will add the record to tbl_order
+        // Here we need to aquire all the product id from their respective cart ids
+        // Cart id will be used to get all the products info.
+        if(!empty($params['cart_id'])){
             
-            // Here we need to aquire all the product id from their respective cart ids 
-            if(!empty($params['cart_id'])){
-
-                foreach(json_decode($params['cart_id'], true) as $key => $val){
-                    
-                    $pid = $this->db->get_where($this->tb_cart, ['cart_id'=>$val])->row()->pid;
-                    $__p[$key]['pid'] = $pid;
-                    // $__p[$key]['pid'] = $this->db->get_where($this->tb_products, ['pid'=>$pid])->row()->created_by;
-                    $__p[$key]['qty'] = $this->db->get_where($this->tb_cart, ['cart_id'=>$val])->row()->qty;
-
-                    $uid = $this->db->get_where($this->tb_products, ['pid'=>$pid])->row()->created_by;
-                    $__uid[$key]['fid'] = $uid;
-                    // $farmer[$key]['name'] = $this->db->get_where($this->tb_user, ['uid'=>$uid])->row()->name != ""? $this->db->get_where($this->tb_user, ['uid'=>$uid])->row()->name: "";
-                    // $farmer[$key]['phone'] = $this->db->get_where($this->tb_user, ['uid'=>$uid])->row()->phone != ""? $this->db->get_where($this->tb_user, ['uid'=>$uid])->row()->phone: "";
-                    // $farmer[$key]['email'] = $this->db->get_where($this->tb_user, ['uid'=>$uid])->row()->email != ""? $this->db->get_where($this->tb_user, ['uid'=>$uid])->row()->email: "";
-                    // $farmer[$key]['address'] = $this->db->get_where($this->tb_user, ['uid'=>$uid])->row()->address != ""? $this->db->get_where($this->tb_user, ['uid'=>$uid])->row()->address: "";
-                    // $farmer[$key]['image'] = $this->db->get_where($this->tb_user, ['uid'=>$uid])->row()->profile_img != ""? $this->db->get_where($this->tb_user, ['uid'=>$uid])->row()->profile_img: "";
-                }
-                
-                $params['pids'] = json_encode($__p);
-                $params['fids'] = json_encode($__uid);
-            }
-            else{
-                $params['pids'] = '';
-                $params['fids'] = '';
-            }
-            
-            
-            $params['status'] = 0;
-            $params['updated_at'] = date('Y-m-d H;i:s');
-            
-            
-            $res = $this->db->insert($this->tb_order, $params);
-            $last_oid = $this->db->insert_id();
+            $ord_num = '';
+           $car_id = json_decode($params['cart_id'], true);
+           $delivery_address = $params['delivery_address'];
+           $delivery_time = $params['delivery_time'];
+      
+      
+      
+            foreach($car_id as $key => $val){
+             
+               // $val1 = str_replace('"', ' ', $val);
+                $r[$key] = $this->db->get_where($this->tb_cart, ['cart_id'=> $val])->result();
     
-            if($res){
+                // All the fields for order table.
+                $data_ord[$key]['p_id'] = $r[$key][0]->pid;
+                $data_ord[$key]['qty'] = $r[$key][0]->qty;
+                $data_ord[$key]['total'] = $r[$key][0]->price;
+                $data_ord[$key]['status'] = $params['status'];
+                $data_ord[$key]['remarks'] = $params['remarks'];
+                $data_ord[$key]['created_by'] = $params['created_by'];
+                $data_ord[$key]['updated_by'] = $this->db->get_where($this->tb_products, [ 'pid'=>$r[$key][0]->pid ])->row()->created_by;
+    
+                // Combination for order no.
+                $ord_num .= $r[$key][0]->pid.$data_ord[$key]['updated_by'];
+            }
+   
+            // Order no that will be same for this order.
+            $order_no = strtoupper('ORD'.substr(sha1($ord_num), 6, 6).rand(0, 10000));
+
+            // Now insert into tbl_order
+            foreach ($data_ord as $key => $value) {
+                $ins_data[$key]['ord_no']       = $order_no;
+                $ins_data[$key]['pids']         = $value['p_id'];
+                $ins_data[$key]['fids']         = $value['updated_by'];
+                $ins_data[$key]['qty']          = $value['qty'];
+                $ins_data[$key]['tot_price']    = $value['total'];
+                $ins_data[$key]['payment_id']   = $params['payment_id'];
+                $ins_data[$key]['status']       = $value['status'];
+                $ins_data[$key]['remarks']      = $value['remarks'];
+                $ins_data[$key]['created_by']   = $value['created_by'];
+                $ins_data[$key]['updated_by']   = $value['updated_by'];
+                $ins_data[$key]['updated_at']   = date('Y-m-d H;i:s');
+                $ins_data[$key]['delivery_address'] = $delivery_address;
+                $ins_data[$key]['delivery_time'] = $delivery_time;
+                
+            }
             
-                $carts = json_decode($params['cart_id'], true);
-                foreach($carts as $key => $val){
-                    $dd[$key] = $val;
-                    
-                    // Update the cart status to 1.
-                    $this->db->where('cart_id', $val);
-                    $res1[$key] = $this->db->update('tbl_cart', ['status'=>'1']);
-                    
-                    
-                    // Get product id from tbl_cart
-                    $g_pid[$key] = $this->db->get_where($this->tb_cart, ['cart_id'=>$val])->result();
-                    $data[$key]['qty'] = $g_pid[$key][0]->qty;
-                    $data[$key]['cust_id'] = $g_pid[$key][0]->created_by;
-                    
-                    $data[$key]['pid'] = $g_pid[$key][0]->pid;
-                    
-                    if(count($g_pid[$key])){
-                        // Get User id from tbl_product
-                        $g_uid[$key] = $this->db->get_where('tbl_products', ['pid'=>$g_pid[$key][0]->pid])->result();
-                        $data[$key]['prod_name'] = $g_uid[$key][0]->name;
-                        $data[$key]['prod_image'] = $g_uid[$key][0]->image;
-
-                        if(count($g_uid[$key])){
-                            // Get Email from tbl_user
-                            $g_email[$key] = $this->db->get_where('tbl_users', ['uid'=>$g_uid[$key][0]->created_by])->result();
-                            
-                            if(count($g_email[$key])){
-                                // Send Mail to that email.
-                                $data[$key]['email'] = $g_email[$key][0]->email;
-                            }
-                            else{
-                                $data[$key]['error'] = ['status'=>false, 'message'=>'Falla al buscar email.'];
-                                // $data[$key]['error'] = ['status'=>false, 'message'=>'Failed to fetch email'];
-                            }
-                            
-                        }
-                        else{
-                            $data[$key]['error'] = ['status'=>false, 'message'=>'Falla al buscar llave de usuario'];
-                            // $data[$key]['error'] = ['status'=>false, 'message'=>'Failed to fetch user key'];
-                        }
-                        
-                    }
-                    else{
-                        $data[$key]['error'] = ['status'=>false, 'message'=>'Falla para buscar Producto'];
-                        // $data[$key]['error'] = ['status'=>false, 'message'=>'Failed to fetch Product'];
-                    }
-
-                    // Update the total quantity in tbl_product.
-                    $total_qty_prod = $this->db->get_where('tbl_products', ['pid'=>$data[$key]['pid']])->row()->total_qty;
-                    $current_stock = ($total_qty_prod - $data[$key]['qty']);
-                    $this->db->where('pid', $data[$key]['pid']);
-                    $res2[$key] = $this->db->update('tbl_products', ['total_qty'=>$current_stock]);
+    
+    
+            $res_ins_ord = $this->db->insert_batch($this->tb_order, $ins_data);
+            
+            if($res_ins_ord != 0){
+                $p_upd_sts = false;
+                // First the products quantity will be updated 
+                foreach($data_ord as $key => $val){
+                    $total_qty_prod = $this->db->get_where($this->tb_products, ['pid'=>$val['p_id']])->row()->total_qty;
+                    $current_stock = ($total_qty_prod - $val['qty']);
+                    $this->db->where('pid', $val['p_id']);
+                    $res2[$key] = $this->db->update($this->tb_products, ['total_qty'=>$current_stock]);
                     if($res2[$key]){
-                        $this->db->delete($this->tb_cart, array('cart_id'=>$val));
+                        $p_upd_sts = true;
                     }
                     else{
-                        echo 'Cantidad Total no actualizada.';
-                        // echo 'Total quantity not updated.';
+                        $p_upd_sts = false;
                     }
-
+                    
                 }
-
-
-                // To save the data in notification table 
-                $noti_data = [
-                        'cust_id'=>$params['created_by'],
-                        'farm_id'=>json_encode($__uid),
-                        'order_id'=>$last_oid
-                    ];
-                $res_noti = $this->db->insert($this->tb_notification, $noti_data);
                 
-                if($res_noti){
-                    // Get created_at from tbl_order
-                    $ordrd_at = $this->db->get_where('tbl_order', ['oid'=>$last_oid])->result();
-    
-                    return [
-                        'status'=>true, 
-                        'message'=>'Pedido procesado con éxito.', 
-                        // 'message'=>'Ordered successfully.', 
-                        'order_id'=>$last_oid, 
-                        'order_date'=>$ordrd_at[0]->created_at, 
-                        'total_price'=>$ordrd_at[0]->tot_price,
-                        'customer_mail'=>$this->db->get_where('tbl_users', ['uid'=>$params['created_by']])->row()->email,
-                        'data'=>$data,
-                        // 'farmer_details'=>$farmer
-                    ];
+                
+                if($p_upd_sts){
+                    // All the details from tbl_cart need to be deleted.
+                    $this->db->where_in('cart_id', json_decode($params['cart_id']));
+                    $del_res_cart = $this->db->delete($this->tb_cart);
+        
+                    if($del_res_cart){
+                        return ['status'=>true, 'message'=>'Order added successfully.and cart deleted.', 'order_no'=>$order_no];
+                    }
+                    else{
+                        return ['status'=>false, 'message'=>'Order added successfully. but cart not deleted', 'order_no'=>$order_no];
+                    }
                     
                 }
                 else{
-                    return ['status'=>false, 'message'=>'Falla para agregar en Notificación.'];
-                    // return ['status'=>false, 'message'=>'Failed to add in Notification.'];
+                    return ['status'=>false, 'message'=>'product qty not updated.'];
                 }
+                
 
             }
             else{
-                return ['status'=>false, 'message'=>'Falla para agregar Orden.'];
-                // return ['status'=>false, 'message'=>'Failed to add Order.'];
+                return ['status'=>true, 'message'=>'failed to add order.'];
             }
-            
-            
+          
         }
-        // else{
-        //     // This condition of code will add the record to tbl_order
-            
-        //     $res = $this->db->insert($this->tb_order, $params);
-        //     $last_oid = $this->db->insert_id();
-    
-        //     // Update the cart status to 1.
-        //     $this->db->where('cart_id', $val);
-        //     $res1[$key] = $this->db->update('tbl_order', ['status'=>'1']);
-                        
-        //     if($res){
-                
-        //         if(true){
-                    
-        //             $carts = json_decode($params['cart_id'], true);
-        //             foreach($carts as $key => $val){
-        //                 $dd[$key] = $val;
-                        
-        //                 // Update the cart status to 1.
-        //                 $this->db->where('cart_id', $val);
-        //                 $res1[$key] = $this->db->update('tbl_cart', ['status'=>'1']);
-                        
-        //                 // Get product id from tbl_cart
-        //                 $g_pid[$key] = $this->db->get_where($this->tb_cart, ['cart_id'=>$val])->result();
-        //                 $data[$key]['qty'] = $g_pid[$key][0]->qty;
-        //                 $data[$key]['cust_id'] = $g_pid[$key][0]->created_by;
-                        
-        //                 if(count($g_pid[$key])){
-        //                     // Get User id from tbl_product
-        //                     $g_uid[$key] = $this->db->get_where('tbl_products', ['pid'=>$g_pid[$key][0]->pid])->result();
-        //                     $data[$key]['prod_name'] = $g_uid[$key][0]->name;
-        //                     $data[$key]['prod_image'] = $g_uid[$key][0]->image;
-    
-        //                     if(count($g_uid[$key])){
-        //                         // Get Email from tbl_user
-        //                         $g_email[$key] = $this->db->get_where('tbl_users', ['uid'=>$g_uid[$key][0]->created_by])->result();
-                                
-        //                         if(count($g_email[$key])){
-        //                             // Send Mail to that email.
-        //                             $data[$key]['email'] = $g_email[$key][0]->email;
-        //                         }
-        //                         else{
-        //                             $data[$key]['error'] = ['status'=>false, 'message'=>'Failed to fetch email'];
-        //                         }
-                                
-        //                     }
-        //                     else{
-        //                         $data[$key]['error'] = ['status'=>false, 'message'=>'Failed to fetch user key'];
-        //                     }
-                            
-        //                 }
-        //                 else{
-        //                     $data[$key]['error'] = ['status'=>false, 'message'=>'Failed to fetch Product'];
-        //                 }
-                        
-        //             }
-    
-        //             // Get created_at from tbl_order
-        //             $ordrd_at = $this->db->get_where('tbl_order', ['oid'=>$last_oid])->result();
-    
-        //             return [
-        //                 'status'=>true, 
-        //                 'message'=>'Ordered successfully.', 
-        //                 'order_date'=>$ordrd_at[0]->created_at, 
-        //                 'total_price'=>$ordrd_at[0]->tot_price,
-        //                 'data'=>$data
-        //             ];
-        //         }
-        //         else{
-        //             return ['status'=>false, 'message'=>'Order not successful.'];
-        //         }
-    
-        //     }
-        //     else{
-        //         return ['status'=>false, 'message'=>'Failed to add Order.'];
-        //     }
-            
-        // }
-        
+        else{
+            return ['status'=>false, 'message'=>'Sorry, there is insufficient cart ids.'];
+        }
 
     }
 
@@ -756,20 +629,26 @@ class Order_model extends CI_Model {
     
     
     public function all_order_detail(){
-
+$this->db->query("SET sql_mode=(SELECT REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', ''));");
+            $this->db->group_by('ord_no');
             $this->db->order_by('oid', 'desc');
-                     $res = $this->db->get($this->tb_order)->result();
+             $res = $this->db->get($this->tb_order)->result();
+
+
              if($res){
                  foreach($res  as $rs){                 
                     $OrderId = $rs->oid;
+                   
+
                     $CustomerId = $rs->created_by;
                     $productDetail =  $rs->pids;
                    // echo "product detail";
 
-                    $customerName = $this->db->get_where($this->tb_user, ['uid'=>$CustomerId])->row('name');
-                     $customerEmail = $this->db->get_where($this->tb_user, ['uid'=>$CustomerId])->row('email');
+                $customerName = $this->db->get_where($this->tb_user, ['uid'=>$CustomerId])->row('name');
+                $customerEmail = $this->db->get_where($this->tb_user, ['uid'=>$CustomerId])->row('email');
                     
                       $data['order'.$rs->oid]['orderId']  = $OrderId;
+                      $data['order'.$rs->oid]['poId']  = $rs->ord_no;
                       $data['order'.$rs->oid]['customerName'] = $customerName ;
                       $data['order'.$rs->oid]['orderDate'] = date('d.m.y', strtotime($rs->created_at)) ;
                       $data['order'.$rs->oid]['customerEmail'] = $customerEmail ;
@@ -777,14 +656,16 @@ class Order_model extends CI_Model {
                       $data['order'.$rs->oid]['price'] = $rs->tot_price ;
                       $data['order'.$rs->oid]['remark'] = $rs->remarks ;    
              
-                    }              
+                    }  
+
+            
                             return [
                                 'status'=>true,                    
                                 'data'=>$data];
                         }
                         else{
                             //return ['status'=>false, 'message'=>'No se pudieron recuperar los datos con oid y uid..'];
-                            return ['status'=>false, 'message'=>'Failed to fetch data with oid and uid.'];
+                            return ['status'=>false, 'message'=>'Failed to fetch data with oid and uid.','data'=>array()];
                         }
 
     }
@@ -861,57 +742,59 @@ $data['farmers']['country'] = $this->db->get_where($this->tb_user, ['uid'=>$para
 
 
  public function get_order_detail($parms){
-   $res = $this->db->get_where($this->tb_order, ['oid'=>$parms])->result();
+   $result = $this->db->get_where($this->tb_order, ['ord_no'=>$parms])->result();
 
-$CustomerId = $res[0]->created_by;
+$CustomerId = $result[0]->created_by;
    
     $customerName = $this->db->get_where($this->tb_user, ['uid'=>$CustomerId])->row('name');
     $customerEmail = $this->db->get_where($this->tb_user, ['uid'=>$CustomerId])->row('email');
     $customerPhone = $this->db->get_where($this->tb_user, ['uid'=>$CustomerId])->row('phone');
    
-            if($res){
+            if($result){
                 // To get the product details
-                $pids = json_decode($res[0]->pids, true);
-                
-                foreach($pids as $keys => $val){
-    $data[$keys]['products']['pid'] = $this->db->get_where($this->tb_products, ['pid'=>$val['pid']])->row()->pid;
-    $data[$keys]['products']['pname'] = $this->db->get_where($this->tb_products, ['pid'=>$val['pid']])->row()->name;
-    $data[$keys]['products']['pdesc'] = $this->db->get_where($this->tb_products, ['pid'=>$val['pid']])->row()->description;
-    $data[$keys]['products']['pimg'] = $this->db->get_where($this->tb_products, ['pid'=>$val['pid']])->row()->image;
-    $data[$keys]['products']['ordered_qty'] = $val['qty'];
-    $data[$keys]['products']['unit'] = $this->db->get_where($this->tb_products, ['pid'=>$val['pid']])->row()->unit;
-    $data[$keys]['products']['sell_price'] = $this->db->get_where($this->tb_products, ['pid'=>$val['pid']])->row()->sell_price;
-    $data[$keys]['products']['total_price'] = "".$val['qty'] * $data[$keys]['products']['sell_price'];
-                }
-                
-                
-                // To get the Farmers details
-                $fids  = json_decode($res[0]->fids, true);
-                if($fids){
-                    foreach($fids as $fkeys => $fval){
-    $data[$fkeys]['farmers']['fid']     = $fval['fid'];
-    $data[$fkeys]['farmers']['fname']   = $this->db->get_where($this->tb_user, ['uid'=>$fval['fid']])->row('name');
-    $data[$fkeys]['farmers']['femail'] = $this->db->get_where($this->tb_user, ['uid'=>$fval['fid']])->row('email');
-    $data[$fkeys]['farmers']['fphone'] = $this->db->get_where($this->tb_user, ['uid'=>$fval['fid']])->row('phone');
-    $data[$fkeys]['farmers']['faddress'] = $this->db->get_where($this->tb_user, ['uid'=>$fval['fid']])->row('address');
-    $data[$fkeys]['farmers']['ftown'] = $this->db->get_where($this->tb_user, ['uid'=>$fval['fid']])->row('town');
-    $data[$fkeys]['farmers']['fcountry'] = $this->db->get_where($this->tb_user, ['uid'=>$fval['fid']])->row('country');
-                    }
-                }
-                else{
-                    $data['farmers'] = 'Farmers doesnot exists.';
-                }
-
+              //  $pids = json_decode($res[0]->pids, true);
+                $k = $j = 0;
+     foreach($result as $res ){ 
+                 $data[$k]['products']['status'] = $res->status;
+                 $data[$k]['products']['oid'] = $res->oid;
+            $data[$k]['products']['pid'] = $res->pids;
+            $data[$k]['products']['pname'] = $this->db->get_where($this->tb_products, ['pid'=>$res->pids])->row()->name;
+            $data[$k]['products']['pdesc'] = $this->db->get_where($this->tb_products, ['pid'=>$res->pids])->row()->description;
+            $data[$k]['products']['pimg'] = $this->db->get_where($this->tb_products, ['pid'=>$res->pids])->row()->image;
+            $data[$k]['products']['ordered_qty'] = $res->qty;
+            $data[$k]['products']['unit'] = $this->db->get_where($this->tb_products, ['pid'=>$res->pids])->row()->unit;
+            $data[$k]['products']['sell_price'] = $this->db->get_where($this->tb_products, ['pid'=>$res->pids])->row()->sell_price;
+            $data[$k]['products']['total_price'] = $res->tot_price;     
+                        
+                        // To get the Farmers details
+                      //  $fids  = json_decode($res[0]->fids, true);               
+                           
+            $data[$j]['farmers']['fid']     = $res->fids;
+            $data[$j]['farmers']['fname']   = $this->db->get_where($this->tb_user, ['uid'=>$res->fids])->row('name');
+            $data[$j]['farmers']['femail'] = $this->db->get_where($this->tb_user, ['uid'=>$res->fids])->row('email');
+            $data[$j]['farmers']['fphone'] = $this->db->get_where($this->tb_user, ['uid'=>$res->fids])->row('phone');
+            $data[$j]['farmers']['faddress'] = $this->db->get_where($this->tb_user, ['uid'=>$res->fids])->row('address');
+            $data[$j]['farmers']['ftown'] = $this->db->get_where($this->tb_user, ['uid'=>$res->fids])->row('town');
+            $data[$j]['farmers']['fcountry'] = $this->db->get_where($this->tb_user, ['uid'=>$res->fids])->row('country');
+                   
+     
+$j++;$k++;
+     }
+                // else{
+                //     $data['farmers'] = 'Farmers doesnot exists.';
+                // }
+                         
+        
 
                 return [
                     'status'=>true,                     
                     'order_from'=> $customerName, 
                     'customerEmail' => $customerEmail,
                     'customerPhone' => $customerPhone,
-                    'order_id'=>$parms,
-                    'total'=>count($pids),
-                    'date'=>date('d.m.y', strtotime($res[0]->created_at)), 
-                    'order_status'=>$this->ord_status[$res[0]->status],
+                    'order_no'=>$parms,
+                    // 'total'=>count($pids),
+                    // 'date'=>date('d.m.y', strtotime($res[0]->created_at)), 
+                    // 'order_status'=>$this->ord_status[$res[0]->status],
                     'data'=>$data];
             }
             else{
@@ -922,6 +805,21 @@ $CustomerId = $res[0]->created_by;
        
      //   return ['status'=>false, 'message'=>'Establezca las variables correctamente.'];
 
+
+ }
+
+
+ public function upd_order_by_id($params){
+
+     $this->db->where('ord_no', $params['ord_no']);
+      $res = $this->db->update('tbl_order', ['status'=>$params['orderStatus'],'updated_at'=>$params['updateAt'],'remarks'=>$params['orderRemark']]);
+
+      if($res){
+  return ['status'=>true, 'message'=>'Your order is updated'];
+      }
+      else{
+         return ['status'=>false, 'message'=>'Your order is not updated'];
+      }
 
  }
     // TRUNCATE TABLE
